@@ -1,0 +1,17 @@
+Sub getColumns()
+
+Dim nmary As Variant, input_f110 As Worksheet, transit As Worksheet, i As Long, ttt As Range
+
+Sheets(3).Cells.Clear
+
+Set input_f110 = ThisWorkbook.ActiveSheet
+
+nmary = Array("Kreditor", "Fälligkeit", "Valutadat.", "Regulierter Betrag", "   Bruttobetrag FW", " Nettobetrag in FW", "      Skontobetrag", "Währg")
+
+Set transit = ThisWorkbook.Sheets(3)
+    For i = LBound(nmary) To UBound(nmary)
+        Set ttt = Worksheets.Item("input_f110").rows(5).Find(nmary(i), , xlValues).EntireColumn
+        ttt.Copy transit.Cells(1, i + 1)
+    Next
+
+End Sub
