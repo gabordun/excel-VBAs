@@ -1,0 +1,69 @@
+Sub download()
+
+Dim myURL As String
+myURL = "https://www.mnb.hu/letoltes/bubor2.xls"
+
+Dim HttpReq As Object
+Set HttpReq = CreateObject("Microsoft.XMLHTTP")
+HttpReq.Open "GET", myURL, False, "username", "password"
+HttpReq.send
+
+myURL = HttpReq.responseBody
+If HttpReq.Status = 200 Then
+    Set oStrm = CreateObject("ADODB.Stream")
+    oStrm.Open
+    oStrm.Type = 1
+    oStrm.Write HttpReq.responseBody
+    oStrm.SaveToFile "K:\xxx\bubor2.xls", 2 ' 1 = no overwrite, 2 = overwrite
+    oStrm.Close
+End If
+
+Dim myURL2 As String
+myURL2 = "https://www.mnb.hu/Root/ExchangeRate/arfolyam.xlsx"
+
+Dim HttpReq2 As Object
+Set HttpReq2 = CreateObject("Microsoft.XMLHTTP")
+HttpReq2.Open "GET", myURL2, False, "username", "password"
+HttpReq2.send
+
+myURL2 = HttpReq2.responseBody
+If HttpReq2.Status = 200 Then
+    Set oStrm2 = CreateObject("ADODB.Stream")
+    oStrm2.Open
+    oStrm2.Type = 1
+    oStrm2.Write HttpReq2.responseBody
+    oStrm2.SaveToFile "K:\xxx\arfolyam.xlsx", 2 ' 1 = no overwrite, 2 = overwrite
+    oStrm2.Close
+End If
+
+'Call Disable_Background_Refresh
+
+Call refresh_connections
+
+End Sub
+
+******************
+
+Sub refresh_connections()
+
+  ActiveWorkbook.UpdateLink Name:=ActiveWorkbook.LinkSources
+    
+  Application.DisplayStatusBar = True
+  Application.StatusBar = "Frissítve: " & Now()
+
+End Sub
+
+********************
+
+Public Sub Disable_Background_Refresh()
+
+    Dim ws As Worksheet
+    Dim qt As QueryTable
+
+    For Each ws In ThisWorkbook.Worksheets
+        For Each qt In ws.QueryTables
+            qt.BackgroundQuery = False
+        Next
+    Next
+    
+End Sub
