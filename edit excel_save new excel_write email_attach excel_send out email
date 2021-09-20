@@ -1,0 +1,235 @@
+Sub workbook_open()
+
+MsgBox "Minden egyéb Excelt bezártam, így továbbmegyek. "
+
+End Sub
+
+Sub Macro()
+
+Rem változók definiálása emailhez, ellenőrzéshez
+    
+    Dim OutApp As Object
+    Dim OutMail As Object
+    Dim Email As String
+    Dim CheckRange As Range
+
+Rem ISMÉTLŐDŐ RÉSZ EINKAUF
+
+Rem új lap létrehozása színezéssel
+
+    Sheets.Add After:=ActiveSheet
+    Sheets("Munka1").Select
+    Sheets("Munka1").Name = "Einkauf"
+        'With ActiveWorkbook.Sheets("Einkauf").Tab
+        '.ThemeColor = xlThemeColorAccent4
+        '.TintAndShade = 0.599993896298105
+    'End With
+    
+Rem fejléc beszúrás
+    
+    Sheets("Macro Settings").Select
+    Range("A8:K8").Select
+    Application.CutCopyMode = False
+    Selection.Copy
+    Sheets("Einkauf").Select
+    Range("A2").Select
+    ActiveSheet.Paste
+    
+Rem megnevezés a szűréshez
+    
+    Sheets("Einkauf").Select
+    Range("A1").Select
+    ActiveCell.FormulaR1C1 = "Einkauf"
+    Range("C6").Select
+    
+Rem lista feltöltése képlettel
+ 
+    Sheets("Macro Settings").Select
+    Range("A9:K9").Select
+    Selection.Copy
+    Sheets("Einkauf").Select
+    Range("A3").Select
+    ActiveSheet.Paste
+    
+Rem képlet megtisztítás
+    
+    Sheets("Einkauf").Select
+    Range("A3").Select
+    Application.CutCopyMode = False
+    ActiveCell.FormulaR1C1 = _
+        "=+IF(Lista!R[-1]C[11]=Einkauf!R1C1,Lista!R[-1]C[1],"""")"
+    Range("B3").Select
+    ActiveCell.FormulaR1C1 = _
+        "=+IF(Lista!R[-1]C[10]=Einkauf!R1C1,Lista!R[-1]C[1],"""")"
+    Range("C3").Select
+    ActiveCell.FormulaR1C1 = _
+        "=+IF(Lista!R[-1]C[9]=Einkauf!R1C1,Lista!R[-1]C[1],"""")"
+    Range("D3").Select
+    ActiveCell.FormulaR1C1 = _
+        "=+IF(Lista!R[-1]C[8]=Einkauf!R1C1,Lista!R[-1]C[1],"""")"
+    Range("E3").Select
+    ActiveCell.FormulaR1C1 = _
+        "=+IF(Lista!R[-1]C[7]=Einkauf!R1C1,Lista!R[-1]C[1],"""")"
+    Range("F3").Select
+    ActiveCell.FormulaR1C1 = _
+        "=+IF(Lista!R[-1]C[6]=Einkauf!R1C1,Lista!R[-1]C[1],"""")"
+    Range("G3").Select
+    ActiveCell.FormulaR1C1 = _
+        "=+IF(Lista!R[-1]C[5]=Einkauf!R1C1,Lista!R[-1]C[1],"""")"
+    Range("H3").Select
+    ActiveCell.FormulaR1C1 = _
+        "=+IF(Lista!R[-1]C[4]=Einkauf!R1C1,Lista!R[-1]C[1],"""")"
+    Range("I3").Select
+    ActiveCell.FormulaR1C1 = _
+        "=+IF(Lista!R[-1]C[3]=Einkauf!R1C1,Lista!R[-1]C[1],"""")"
+    Range("J3").Select
+    ActiveCell.FormulaR1C1 = _
+        "=+IF(Lista!R[-1]C[2]=Einkauf!R1C1,Lista!R[-1]C[2],"""")"
+    
+    
+Rem képlet lehúzás
+    
+    Sheets("Einkauf").Select
+    Range("A3:J3").Select
+    Application.CutCopyMode = False
+    Selection.AutoFill Destination:=Range("A3:J300"), Type:=xlFillDefault
+    'Range("A3:D16").Select
+    
+Rem értékként lementés
+    
+    Sheets("Einkauf").Select
+    Cells.Select
+    Selection.Copy
+    Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+        :=False, Transpose:=False
+        
+Rem üres sorok törlése
+
+    Sheets("Einkauf").Select
+On Error Resume Next
+    With Range("a1:a300")
+    .Value = .Value
+    .SpecialCells(xlCellTypeBlanks).EntireRow.Delete
+    End With
+    
+Rem tábla formázás
+    
+    Sheets("Einkauf").Select
+    Range("A2:K2").Select
+    Selection.Font.Bold = True
+    Range("K2").Select
+    With Selection.Font
+        .Color = -16776961
+        .TintAndShade = 0
+    End With
+    
+    Columns("G:G").Select
+    Selection.NumberFormat = "m/d/yyyy"
+    
+    Columns("H:H").Select
+    Selection.Style = "Comma"
+    
+    Columns("A:K").Select
+    Columns("A:K").EntireColumn.AutoFit
+    
+    Rows("3:3").Select
+    ActiveWindow.FreezePanes = True
+    
+    Range("A1").Select
+    With Selection.Font
+        .Color = -16776961
+        .TintAndShade = 0
+    End With
+    Selection.Font.Bold = True
+    Selection.Font.Underline = xlUnderlineStyleSingle
+    
+Rem sheet lementés, ha nem üres
+    
+    Set CheckRange = Worksheets("Einkauf").Range("A3:A3")
+
+    If IsEmpty(CheckRange) = False Then
+       
+      Sheets("Einkauf").Select
+      Sheets("Einkauf").Copy
+      ChDir _
+        "K:\xxx"
+      Application.DisplayAlerts = False
+      ActiveWorkbook.SaveAs Filename:= _
+        "K:\xxx\Zárlatos tételek_Einkauf_" & Format(Now(), "yyyymmdd") & ".xlsx" _
+        , FileFormat:=xlOpenXMLWorkbook, CreateBackup:=False
+      Windows("Einkauf_" & Format(Now(), "yyyymmdd") & ".xlsx").Activate
+    
+      Rem sheet kiküldés
+
+    Set OutApp = CreateObject("Outlook.Application")
+    Set OutMail = OutApp.CreateItem(0)
+    
+    Email = "Kedves Tünde, <br><br>" & _
+            "Tattaratta tattarar tattara. <br><br>" & _
+            "Tittiri tittiri ttittirrri. <br><br>" & _
+            "Taratram taratra tam. <br><br>" & _
+            "Üdvözlettel, "
+    
+    On Error Resume Next
+    With OutMail
+        .Display (Modal = True)
+        .SentOnBehalfOfName = "www@zzz.com"
+        .To = "yyy@zzz.com"
+        '.CC = "www@zzz.com"
+        .BCC = ""
+        .Attachments.Add "K:\xxx\Zárlatos tételek_Einkauf_" & Format(Now(), "yyyymmdd") & ".xlsx"
+        .Subject = "Fizetési zárlattal ellátott tételek listája Einkauf " & Format(Now(), "yyyy.mm.")
+        .HTMLBody = Email
+        '.Send  'or use .Display
+    End With
+    On Error GoTo 0
+
+    With Application
+        .EnableEvents = True
+        .ScreenUpdating = True
+    End With
+
+    Set OutMail = Nothing
+    Set OutApp = Nothing
+    
+
+Rem új excel bezárás
+    
+    ActiveWorkbook.Close
+            
+    End If
+                
+
+    
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+
+
+Rem BEFEJEZŐ RÉSZ
+
+Rem sheet törlés
+    'Workbooks(“Ausnahmeliste_Melinda.xlsm”).Activate
+    'Application.DisplayAlerts = False
+    'Sheets("Einkauf").Select
+    'ActiveWindow.SelectedSheets.Delete
+    
+Rem Lista kirakása
+    Sheets("Lista").Select
+    Cells.Select
+    Selection.Copy
+    Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+        :=False, Transpose:=False
+    Sheets("Lista").Copy
+    ChDir _
+        "K:\xxx"
+    Application.DisplayAlerts = False
+    ActiveWorkbook.SaveAs Filename:= _
+        "K:\xxx\Teljes zárlatos lista_" & Format(Now(), "yyyymmdd") & ".xlsx" _
+        , FileFormat:=xlOpenXMLWorkbook, CreateBackup:=False
+    ActiveWorkbook.Close
+    
+Rem bezárás
+    'Workbooks(“Ausnahmenliste_Melinda_202012.xlsm”).Activate
+    ActiveWorkbook.Close SaveChanges:=False
+
+End Sub
+    
