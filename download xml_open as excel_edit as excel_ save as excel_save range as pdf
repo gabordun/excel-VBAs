@@ -1,0 +1,114 @@
+Sub Download_xml()
+
+    DownloadFile "https://www.ecb.europa.eu/stats/eurofxref/eurofxref-daily.xml?a456837d31755fe24a1726cf897d45a0", "K:\xxx\ECB_ref_rates.xml"
+
+    Call delete_sheet
+    Call Open_XML_File_As_List
+    Call MoveToWorkbook
+    Call CopyCells
+    Call Save_workbook
+    Call SaveRangeAsPDF
+    'Call OpenPdf
+        
+    
+End Sub
+
+
+Function DownloadFile(sURL As String, sPath As String)
+
+    Dim aBody() As Byte
+
+    With CreateObject("MSXML2.XMLHTTP")
+        .Open "GET", sURL, False
+        .Send
+        aBody = .ResponseBody
+    End With
+    With CreateObject("ADODB.Stream")
+        .Type = 1 ' adTypeBinary
+        .Open
+        .Write aBody
+        .SaveToFile sPath, 2 ' adSaveCreateOverWrite
+        .Close
+    End With
+
+End Function
+
+Sub Open_XML_File_As_List()
+
+Dim oWX As Workbook
+
+Set oWX = Workbooks.OpenXML(Filename:="K:\xxx\ECB_ref_rates.xml", LoadOption:=XlXmlLoadOption.xlXmlLoadImportToList)
+
+
+End Sub
+
+Sub MoveToWorkbook()
+
+'Move the active sheet to the existing ECB Workbook.
+
+    
+    ActiveSheet.Move Before:=Workbooks("ECB_betöltő.xlsm").Worksheets("link to ref rates")
+        
+End Sub
+
+Sub delete_sheet()
+
+    'suppress the dialog box that asks the user to confirm the sheet deletion
+    Application.DisplayAlerts = False
+    ThisWorkbook.Sheets(5).Delete
+      
+  
+End Sub
+
+Sub CopyCells()
+    
+    Worksheets("Munka1 (2)").Range("A1:E40").Copy Worksheets("transit").Range("A1:E40")
+    
+End Sub
+
+Sub Save_workbook()
+
+ChDir _
+        "K:\xxx\2021"
+        
+Application.DisplayAlerts = False
+        
+    ActiveWorkbook.SaveAs Filename:= _
+        "K:\xxx\2021\ECB_" & Format(Now(), "yyyymmdd") & ".xlsx" _
+        , FileFormat:=xlOpenXMLWorkbook, CreateBackup:=False
+End Sub
+
+Sub SaveRangeAsPDF()
+
+'Create and assign variables
+Dim saveLocation As String
+Dim rng As Range
+
+saveLocation = "K:\xxx\2021\SAP_Wawi_ECB_" & Format(Now(), "yyyymmdd") & ".pdf"
+Set rng = Sheets("Munka1").Range("A1:D14")
+
+'Save a range as PDF
+
+Application.DisplayAlerts = False
+
+rng.ExportAsFixedFormat Type:=xlTypePDF, _
+Filename:=saveLocation
+
+End Sub
+
+'Open the saved pdf file
+
+Function OpenAnyFile(strPath As String)
+
+  Set objShell = CreateObject("Shell.Application")
+  objShell.Open (strPath)
+  
+End Function
+
+Sub OpenPdf()
+
+  Dim pdfPath As String
+  pdfPath = saveLocation
+  Call OpenAnyFile(pdfPath)
+  
+End Sub
