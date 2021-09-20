@@ -1,0 +1,69 @@
+Sub savecsv()
+
+'set variables
+
+Dim Könyvelés As Worksheet, out As Worksheet
+
+'copy data to out
+
+
+Workbooks("xxx.xlsm").Activate
+Sheets("Könyvelés").Copy Before:=Sheets(1)
+ActiveSheet.Name = "out"
+
+'copy as value
+
+Sheets("out").Select
+    Cells.Select
+    Selection.Copy
+    Selection.PasteSpecial Paste:=xlPasteValues, Operation:=xlNone, SkipBlanks _
+        :=False, Transpose:=False
+
+'clear formatting
+
+range("A1:IV1").ClearFormats
+range("A1:A5000").ClearFormats
+range("C1:E5000").ClearFormats
+range("H1:IV5000").ClearFormats
+
+'rearranging columns
+
+Columns("C").ClearContents
+Columns("H").ClearContents
+Columns("K").ClearContents
+Columns("F:H").Insert
+Columns("M").Copy Columns("F")
+Columns("M").Copy Columns("H")
+
+Columns("K").Delete
+Columns("M").Delete
+Columns("L").Delete
+Columns("P").Delete
+
+Columns("N:AA").Delete
+
+'paste appropriate content
+
+Sheets("out").range("c1:c1000").Value = "HU52"
+Sheets("out").range("g1:g1000").Value = "120211"
+Sheets("out").range("m1:m1000").Value = "HUF"
+
+'deleting irrelevant rows
+
+Rows(1).Delete
+
+Application.ScreenUpdating = False
+Columns("B:B").SpecialCells(xlCellTypeBlanks).EntireRow.Delete
+Application.ScreenUpdating = True
+
+'move to another workbbook and save as csv
+
+ActiveSheet.Move
+Application.DisplayAlerts = False
+ActiveWorkbook.SaveAs Filename:="K:\xxx\" & "Kartenabrechnung" & "_" & Format(Now() - 15, "mmyy") & ".csv" _
+        , FileFormat:=xlCSV, Local:=True, CreateBackup:=False
+        
+ActiveWorkbook.Close False
+
+
+End Sub
